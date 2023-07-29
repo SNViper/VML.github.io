@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project VML</title>
+    <style>
+        /* Set the background color to a mix of blue and cyan */
+        body {
+            background-color: #00bfff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #container {
+            text-align: center;
+            background-color: #fff;
+            height: 520px;
+            width: 360px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+        }
+
+        #playlist {
+            list-style: none; /* Remove default list-style */
+            padding: 0;
+        }
+
+        #playlist li {
+            cursor: pointer;
+        }
+
+        /* Add styles for the indicators */
+        .indicator-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .indicator {
+            width: 50px;
+            height: 50px;
+            border: 2px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #playStopIndicator {
+            background-color: #a1e7ff;
+        }
+
+        #loopIndicator {
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Project VML</h1>
+        <ul id="playlist">
+            <li data-src="Snow.mp3">Snow</li>
+            <li data-src="Time and Space.mp3">Time and Space</li>
+            <li data-src="Your Eyes.mp3">Your Eyes</li>
+            <li data-src="Magical Future.mp3">Magical Future</li>
+            <li data-src="Years Go Pass.mp3">Years Go Pass</li>
+            <li data-src="Perfect Girl.mp3">Perfect Girl</li>
+			<li data-src="After Dark.mp3">After Dark</li>
+			<li data-src="Enjoy the Silence.mp3">Enjoy the Silence</li>
+			<li data-src="Under Your Spell.mp3">Under Your Spell</li>
+			<li data-src="Instant Crush.mp3">Instant Crush</li>
+			<li data-src="Save Your Tears.mp3">Save Your Tears</li>
+			<li data-src="Oblivion.mp3">Oblivion</li>
+			<li data-src="The Model.mp3">The Model</li>
+			<li data-src="Night Call.mp3">Night Call</li>
+            <!-- Add more songs as needed -->
+        </ul>
+        <audio controls id="audioPlayer">
+            Your browser does not support the audio element.
+        </audio>
+        <div class="indicator-container">
+            <div id="playStopIndicator" class="indicator"></div>
+            <div style="width: 35px;"></div> <!-- Space between the indicators -->
+            <div id="loopIndicator" class="indicator"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const playlist = document.getElementById('playlist');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const playStopIndicator = document.getElementById('playStopIndicator');
+            const loopIndicator = document.getElementById('loopIndicator');
+
+            let currentSongIndex = -1; // Initialize to -1 to represent no song selected
+            let isLoopingSong = false;
+            let isLoopingPlaylist = false;
+            let isPlaying = false;
+
+            function playSong(songIndex) {
+                if (songIndex >= 0 && songIndex < playlist.children.length) {
+                    const songItem = playlist.children[songIndex];
+                    const songPath = songItem.dataset.src;
+                    audioPlayer.src = songPath;
+                    audioPlayer.play();
+                    currentSongIndex = songIndex;
+                }
+            }
+
+            function playRandomSong() {
+                const randomIndex = Math.floor(Math.random() * playlist.children.length);
+                playSong(randomIndex);
+            }
+
+            function playNextSong() {
+                if (isLoopingSong) {
+                    audioPlayer.currentTime = 0;
+                    audioPlayer.play();
+                } else if (isLoopingPlaylist) {
+                    const nextSongIndex = (currentSongIndex + 1) % playlist.children.length;
+                    playSong(nextSongIndex);
+                } else {
+                    const nextSongIndex = currentSongIndex + 1;
+                    if (nextSongIndex < playlist.children.length) {
+                        playSong(nextSongIndex);
+                    } else {
+                        playRandomSong();
+                    }
+                }
+            }
+
+            function togglePlayStop() {
+                if (isPlaying) {
+                    audioPlayer.pause();
+                    isPlaying = false;
+                    playStopIndicator.style.backgroundColor = '#a1e7ff';
+                } else {
+                    if (currentSongIndex === -1) {
+                        playRandomSong();
+                    } else {
+                        audioPlayer.play();
+                    }
+                    isPlaying = true;
+                    playStopIndicator.style.backgroundColor = '#00bfff';
+                }
+            }
+
+            audioPlayer.addEventListener('ended', function() {
+                playNextSong();
+            });
+
+            audioPlayer.addEventListener('play', function() {
+                isPlaying = true;
+                playStopIndicator.style.backgroundColor = '#00bfff';
+            });
+
+            audioPlayer.addEventListener('pause', function() {
+                isPlaying = false;
+                playStopIndicator.style.backgroundColor = '#a1e7ff';
+            });
+
+            playStopIndicator.addEventListener('click', function() {
+                togglePlayStop();
+            });
+
+            loopIndicator.addEventListener('click', function() {
+                if (isLoopingSong) {
+                    isLoopingSong = false;
+                    isLoopingPlaylist = true;
+                    loopIndicator.style.backgroundColor = '#00506b';
+                } else if (isLoopingPlaylist) {
+                    isLoopingPlaylist = false;
+                    loopIndicator.style.backgroundColor = 'transparent';
+                } else {
+                    isLoopingSong = true;
+                    loopIndicator.style.backgroundColor = '#007ea8';
+                }
+            });
+
+            // Add click event to select songs
+            playlist.addEventListener('click', function(event) {
+                const target = event.target;
+                if (target.tagName === 'LI') {
+                    const songIndex = [...playlist.children].indexOf(target);
+                    playSong(songIndex);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
